@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
+from reviews.validators import validate_year
 
 ROLES = ("user", "moderator", "admin",)
 
@@ -12,30 +13,58 @@ class MyUser(AbstractUser):
 
 
 class Category(models.Model):
+    """Модель категории."""
+
     name = models.CharField(max_length=256)
     slug = models.SlugField(unique=True, max_length=50)
+
+    class Meta:
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
+        ordering = ('name',)
+
+    def __str__(self):
+        return self.name[:30]
 
 
 class Genre(models.Model):
-    name = models.CharField(max_length=256)
-    slug = models.SlugField(unique=True, max_length=50)
+    """Модель жанра."""
+
+    name = models.CharField(max_length=256, verbose_name='Hазвание жанра')
+    slug = models.SlugField(unique=True, max_length=50, verbose_name='slug')
+
+    class Meta:
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
+        ordering = ('name',)
+
+    def __str__(self):
+        return self.name[:30]
 
 
 class Title(models.Model):
+    """Модель произведения."""
+
     name = models.CharField(max_length=256)
-    year = models.IntegerField(max_length=4)
-    # description = models.CharField()
-    # genre = models.ManyToManyField(Genre, through='GenreTitle')
+    year = models.IntegerField(
+        max_length=4,
+        verbose_name='Год выпуска',
+        validators=(validate_year,),)
     category = models.OneToOneField(
-        Category, on_delete=models.SET_NULL,
+        Category,
+        verbose_name='Категория произведения',
+        on_delete=models.SET_NULL,
         null=True
     )
 
     class Meta:
-        verbose_name = 'произведения'
-        verbose_name_plural = 'Произведение'
+        verbose_name = 'Произведение'
+        verbose_name_plural = 'Произведения'
         default_related_name = 'titles'
-        # ordering = ('-pub_date',)
+        ordering = ('-year',)
+
+    def __str__(self):
+        return self.name[:30]
 
 
 class GenreTitle(models.Model):
