@@ -27,6 +27,8 @@ class Title(models.Model):
     year = models.IntegerField()
     description = models.TextField()
     genre = models.ManyToManyField(Genre, through='GenreTitle')
+    raiting = models.DecimalField(
+        max_digits=4, decimal_places=2, default=0)
     category = models.ForeignKey(
         Category, on_delete=models.SET_NULL,
         null=True
@@ -38,7 +40,7 @@ class Title(models.Model):
         default_related_name = 'titles'
 
     def __str__(self) -> str:
-        return self.name
+        return f'{self.pk}'
 
 
 class GenreTitle(models.Model):
@@ -53,11 +55,11 @@ class Review(models.Model):
         verbose_name='Произведение'
     )
     text = models.TextField('Описания для отзыва')
-    author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        verbose_name='Автор'
-    )
+    # author = models.ForeignKey(
+    #     User,
+    #     on_delete=models.CASCADE,
+    #     verbose_name='Автор'
+    # )
     score = models.PositiveSmallIntegerField(
         verbose_name='Оценка',
         validators=[MinValueValidator(1), MaxValueValidator(10)]
@@ -71,13 +73,13 @@ class Review(models.Model):
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
         default_related_name = 'reviews'
-        constraints = [
-            models.UniqueConstraint(fields=['title', 'author'],
-                                    name='unique_title_author')
-        ]
+        # constraints = [
+        #     models.UniqueConstraint(fields=['title', 'author'],
+        #                             name='unique_title_author')
+        # ]
 
     def __str__(self) -> str:
-        return self.title.name
+        return f'{self.pk}'
 
 
 class Comment(models.Model):
@@ -87,11 +89,11 @@ class Comment(models.Model):
         verbose_name='Отзыв'
     )
     text = models.TextField('Описание комментария')
-    author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        verbose_name='Автор'
-    )
+    # author = models.ForeignKey(
+    #     User,
+    #     on_delete=models.CASCADE,
+    #     verbose_name='Автор'
+    # )
     pub_date = models.DateTimeField(auto_now_add=True,
                                     verbose_name='Дата добавления комментария')
 
@@ -101,4 +103,4 @@ class Comment(models.Model):
         default_related_name = 'comments'
 
     def __str__(self) -> str:
-        return self.review.title.name
+        return self.review.text
