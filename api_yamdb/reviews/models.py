@@ -1,6 +1,7 @@
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
+from reviews.validators import validate_year
 from users.models import YamdbUser
 
 
@@ -38,8 +39,7 @@ class Title(models.Model):
     """Модель произведения."""
 
     name = models.CharField(max_length=256)
-    year = models.IntegerField(
-        max_length=4,
+    year = models.PositiveSmallIntegerField(
         verbose_name='Год выпуска',
         validators=(validate_year,),)
     category = models.OneToOneField(
@@ -66,12 +66,12 @@ class GenreTitle(models.Model):
 
 class Review(models.Model):
     title = models.ForeignKey(
-        Title, on_delete=models.CASCADE, related_name='comments'
+        Title, on_delete=models.CASCADE, related_name='reviews',
     )
     text = models.TextField()
     author = models.ForeignKey(
         YamdbUser, on_delete=models.CASCADE,
-        #   related_name='posts'
+        related_name='reviews'
     )
     score = models.PositiveSmallIntegerField(
         validators=(MinValueValidator(1), MaxValueValidator(10))

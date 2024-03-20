@@ -1,19 +1,21 @@
-from django.shortcuts import render
 from rest_framework.viewsets import ModelViewSet
-from rest_framework import viewsets
+from django.db.models import Avg
 from reviews.models import Category, Genre, Title
 from django_filters.rest_framework import DjangoFilterBackend
-from .permissions import IsAuthorOrReadOnlyPermission
+from api.serializers import (CategorySerializer, GenreSerializer,
+                             TitleViewingSerializer, TitleEditingSerializer,)
+from api.permissions import AdminOrReadOnly
+from api.mixins import CreateListDestroyViewSet
 
 
-class CategoryViewSet():
+class CategoryViewSet(CreateListDestroyViewSet):
     """Вьюсет для категорий."""
 
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
-class GenreViewSet():
+class GenreViewSet(CreateListDestroyViewSet):
     """Вьюсет для жанров."""
 
     queryset = Genre.objects.all()
@@ -23,7 +25,13 @@ class GenreViewSet():
 class TitleViewSet(ModelViewSet):
     """Вьюсет для произведений."""
 
-    queryset = Title.objects.all()
-    permission_classes = (IsAuthorOrReadOnlyPermission,)
+    queryset = Title.objects.annotate(rating=Avg('reviews__score'))
+    permission_classes = (AdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('year',)
+
+    def get_serializer_class(self):
+        """Определяет сериализатор в зависимости от типа запроса."""
+        if self.request.method == 'GET':
+            return TitleViewingSerializer
+        return TitleEditingSerializer
