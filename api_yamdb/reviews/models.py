@@ -1,15 +1,7 @@
-from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
-from reviews.validators import validate_year
-
-ROLES = ("user", "moderator", "admin",)
-
-
-class MyUser(AbstractUser):
-    bio = models.TextField('Биография', blank=True)
-    role = models.CharField(default="user", choices=ROLES)
+from users.models import YamdbUser
 
 
 class Category(models.Model):
@@ -73,12 +65,12 @@ class GenreTitle(models.Model):
 
 
 class Review(models.Model):
-    title_id = models.ForeignKey(
+    title = models.ForeignKey(
         Title, on_delete=models.CASCADE, related_name='comments'
     )
     text = models.TextField()
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE,
+        YamdbUser, on_delete=models.CASCADE,
         #   related_name='posts'
     )
     score = models.PositiveSmallIntegerField(
@@ -97,12 +89,12 @@ class Review(models.Model):
 
 
 class Comment(models.Model):
-    review_id = models.ForeignKey(
+    review = models.ForeignKey(
         Review, on_delete=models.CASCADE, related_name='comments'
     )
     text = models.TextField()
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE,
+        YamdbUser, on_delete=models.CASCADE,
         #   related_name='posts'
     )
     pub_date = models.DateTimeField(
