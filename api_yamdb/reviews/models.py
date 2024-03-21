@@ -6,9 +6,9 @@ from django.db import models
 ROLES = ("user", "moderator", "admin",)
 
 
-class MyUser(AbstractUser):
-    bio = models.TextField('Биография', blank=True)
-    role = models.CharField(default="user", choices=ROLES)
+# class MyUser(AbstractUser):
+#     bio = models.TextField('Биография', blank=True)
+#     role = models.CharField(default="user", choices=ROLES)
 from reviews.validators import validate_year
 from users.models import YamdbUser
 
@@ -19,8 +19,8 @@ class Category(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(unique=True, max_length=50)
 
-    def __str__(self) -> str:
-        return self.name
+    # def __str__(self) -> str:
+    #     return self.name
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
@@ -44,15 +44,15 @@ class Genre(models.Model):
     def __str__(self):
         return self.name[:30]
 
-    def __str__(self) -> str:
-        return self.name
+    # def __str__(self) -> str:
+    #     return self.name
 
 
 class Title(models.Model):
     """Модель произведения."""
 
     name = models.CharField(max_length=256)
-    year = models.IntegerField(max_length=4)
+    # year = models.IntegerField(max_length=4)
     # description = models.CharField()
     # genre = models.ManyToManyField(Genre, through='GenreTitle')
     year = models.PositiveSmallIntegerField(
@@ -70,9 +70,9 @@ class Title(models.Model):
         verbose_name_plural = 'Произведения'
         default_related_name = 'titles'
 
-    def __str__(self) -> str:
-        return f'{self.pk}'
-        ordering = ('-year',)
+    # def __str__(self) -> str:
+    #     return f'{self.pk}'
+    #     ordering = ('-year',)
 
     def __str__(self):
         return self.name[:30]
@@ -84,17 +84,17 @@ class GenreTitle(models.Model):
 
 
 class Review(models.Model):
-    title_id = models.ForeignKey(
-        Title, on_delete=models.CASCADE, related_name='comments'
-    )
+    # title_id = models.ForeignKey(
+    #     Title, on_delete=models.CASCADE, related_name='comments'
+    # )
     text = models.TextField()
-    author = models.ForeignKey(
-        User, on_delete=models.CASCADE,
-        #   related_name='posts'
+    # author = models.ForeignKey(
+    #     User, on_delete=models.CASCADE,)
+    #     #   related_name='posts'
     title = models.ForeignKey(
         Title, on_delete=models.CASCADE, related_name='reviews',
     )
-    text = models.TextField()
+    # text = models.TextField()
     author = models.ForeignKey(
         YamdbUser, on_delete=models.CASCADE,
         related_name='reviews'
@@ -127,7 +127,7 @@ class Comment(models.Model):
     )
     text = models.TextField()
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE,
+        YamdbUser, on_delete=models.CASCADE,
         #   related_name='posts'
     )
     pub_date = models.DateTimeField(
