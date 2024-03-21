@@ -1,15 +1,18 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-from rest_framework import mixins, viewsets
-from rest_framework import status
+from rest_framework import viewsets
+from rest_framework import status, filters
+from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenViewBase
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 
 from .models import YamdbUser
 from .serializers import AuthUserSerializer, TokenSerializer
+from api.permissions import IsAdmin
 
 
 def generate_and_send_confirmation_code(request):
@@ -21,12 +24,6 @@ def generate_and_send_confirmation_code(request):
         'a@yambd.face',
         [user.email]
     )
-
-
-# class SignUpView(mixins.CreateModelMixin, viewsets.GenericViewSet):
-#     permission_classes = (AllowAny,)
-#     queryset = YamdbUser.objects.all()
-#     serializer_class = AuthUserSerializer
 
 
 class SignUpView(APIView):
@@ -48,64 +45,42 @@ class SignUpView(APIView):
         generate_and_send_confirmation_code(request)
         return Response(request.data, status=status.HTTP_200_OK)
 
-    def perform_create(self, serializer):
-        """Сохраняет сериализатор с указанием роли пользователя."""
-        serializer.save(confirmation_code=)
-
 
 class TokenView(TokenViewBase):
     """Вьюсет для получения токена."""
     permission_classes = (AllowAny,)
     serializer_class = TokenSerializer
 
-    # def perform_create(self, serializer):
-    #     # """Сохраняет сериализатор с указанием роли пользователя."""
-    #     serializer.save(confirmation_code=self.request.user.confirmation_code)
 
+class UserListViewSet(viewsets.ModelViewSet):
+    '''Профиль пользователя'''
+    queryset = YamdbUser.objects.all()
+    serializer_class = AuthUserSerializer
+    permission_classes = (IsAuthenticated, IsAdmin)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('username',)
+    http_method_names = ['get', 'post', 'delete', 'patch']
+    lookup_field = 'username'
+    lookup_value_regex = r'[\w\@\.\+\-]+'
 
-    # def post(self, request):
-    #     """POST-запрос на получение JWT-токена."""
-    #     serializer = TokenSerializer(data=self.request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #     return Response(serializer.data, status=status.HTTP_200_OK)
-    
+    @action(
+        methods=['GET'],
+        detail=False,
+        permission_classes=[IsAuthenticated],
+        url_path='me'
+    )
+    def get_current_user_info(self, request):
+        serializer = self.get_serializer(request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-
-# from django.contrib.auth.validators import UnicodeUsernameValidator
-# from django.core.exceptions import ValidationError
-# from django.core.mail import send_mail
-# from django.shortcuts import render
-# from rest_framework import status
-# from rest_framework import viewsets
-# from rest_framework.viewsets import ModelViewSet
-# from rest_framework.mixins import CreateModelMixin
-# from rest_framework.response import Response
-# from rest_framework.decorators import api_view
-
-# from .models import YamdbUser
-
-# from .serializers import AuthUserSerializer
-
-# MESAGE = 'сообщение с кодом подтверждения отправлено отправлено.'
-
-
-# # class AuthUserViewSet(viewsets.ModelViewSet):
-# #     queryset = YamdbUser.objects.all()
-# #     serializer_class = AuthUserSerializer
-
-
-# @api_view(['POST'])
-# def send_confirmation_code_email(request):
-#     serializer = AuthUserSerializer(data=request.data)
-#     if serializer.is_valid():
-#         send_mail(
-#             subject='Тема письма',
-#             message='Текст сообщения',
-#             # from_email='from@example.com',
-#             recipient_list=['to@example.com'],
-#             fail_silently=True,
-#         )
-#         return Response(
-#             template_name=MESAGE, status=status.HTTP_200_OK
-#         )
-#     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    @get_current_user_info.mapping.patch
+    def update_current_user_info(self, request):
+        serializer = self.get_serializer(
+            request.user,
+            data=request.data,
+            partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.validated_data['role'] = request.user.role
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
