@@ -52,16 +52,11 @@ class Title(models.Model):
     """Модель произведения."""
 
     name = models.CharField(max_length=256)
-    # year = models.IntegerField(max_length=4)
-    # description = models.CharField()
-    # genre = models.ManyToManyField(Genre, through='GenreTitle')
-    year = models.PositiveSmallIntegerField(
-        verbose_name='Год выпуска',
-        validators=(validate_year,),)
-    category = models.OneToOneField(
-        Category,
-        verbose_name='Категория произведения',
-        on_delete=models.SET_NULL,
+    year = models.IntegerField()
+    description = models.TextField()
+    genre = models.ManyToManyField(Genre, through='GenreTitle')
+    category = models.ForeignKey(
+        Category, on_delete=models.SET_NULL,
         null=True
     )
 
@@ -70,12 +65,8 @@ class Title(models.Model):
         verbose_name_plural = 'Произведения'
         default_related_name = 'titles'
 
-    # def __str__(self) -> str:
-    #     return f'{self.pk}'
-    #     ordering = ('-year',)
-
-    def __str__(self):
-        return self.name[:30]
+    def __str__(self) -> str:
+        return self.name
 
 
 class GenreTitle(models.Model):
@@ -84,20 +75,16 @@ class GenreTitle(models.Model):
 
 
 class Review(models.Model):
-    # title_id = models.ForeignKey(
-    #     Title, on_delete=models.CASCADE, related_name='comments'
-    # )
-    text = models.TextField()
-    # author = models.ForeignKey(
-    #     User, on_delete=models.CASCADE,)
-    #     #   related_name='posts'
     title = models.ForeignKey(
-        Title, on_delete=models.CASCADE, related_name='reviews',
+        Title,
+        on_delete=models.CASCADE,
+        verbose_name='Произведение'
     )
-    # text = models.TextField()
+    text = models.TextField('Описания для отзыва')
     author = models.ForeignKey(
-        YamdbUser, on_delete=models.CASCADE,
-        related_name='reviews'
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='Автор'
     )
     score = models.PositiveSmallIntegerField(
         verbose_name='Оценка',
@@ -112,13 +99,13 @@ class Review(models.Model):
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
         default_related_name = 'reviews'
-        # constraints = [
-        #     models.UniqueConstraint(fields=['title', 'author'],
-        #                             name='unique_title_author')
-        # ]
+        constraints = [
+            models.UniqueConstraint(fields=['title', 'author'],
+                                    name='unique_title_author')
+        ]
 
     def __str__(self) -> str:
-        return f'{self.pk}'
+        return self.title.name
 
 
 class Comment(models.Model):
@@ -134,6 +121,14 @@ class Comment(models.Model):
         auto_now_add=True,
         # verbose_name='Добавлено'
     )
+    text = models.TextField('Описание комментария')
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='Автор'
+    )
+    pub_date = models.DateTimeField(auto_now_add=True,
+                                    verbose_name='Дата добавления комментария')
 
     class Meta:
         verbose_name = 'Комментарий'
@@ -141,4 +136,4 @@ class Comment(models.Model):
         default_related_name = 'comments'
 
     def __str__(self) -> str:
-        return self.review.text
+        return self.review.title.name
