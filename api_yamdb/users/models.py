@@ -19,3 +19,9 @@ class YamdbUser(AbstractUser):
     )
     bio = models.TextField('Биография', blank=True)
     role = models.CharField(default="user", choices=ROLES, max_length=9)
+    confirmation_code = models.CharField(
+        # 'код API на почту',
+        max_length=200,
+        null=True,
+        blank=True
+    )
