@@ -21,7 +21,18 @@ class AdminOrReadOnly(permissions.BasePermission):
                 and request.user.role == "admin"))
 
 
-class IsAuthorOrModeratorAndAdmin(permissions.IsAuthenticatedOrReadOnly):
+# class IsAuthorOrModeratorAndAdmin(permissions.IsAuthenticatedOrReadOnly):
 
+#     def has_object_permission(self, request, view, obj):
+#         pass
+
+class IsAuthorOrModeratorAndAdmin(permissions.IsAuthenticatedOrReadOnly):
+    """
+    Проверка прав доступа к объекту.
+    Пользователь имеет доступ, если он является автором объекта, модератором
+    или администратором.
+    """
     def has_object_permission(self, request, view, obj):
-        pass
+        return (request.method in permissions.SAFE_METHODS
+                or obj.author == request.user
+                or request.user.role in ("admin", "moderator"))

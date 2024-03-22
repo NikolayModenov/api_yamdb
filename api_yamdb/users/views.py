@@ -1,18 +1,16 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets
-from rest_framework import status, filters
+from rest_framework import status, filters, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenViewBase
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
 
+from api.permissions import IsAdmin
 from .models import YamdbUser
 from .serializers import AuthUserSerializer, TokenSerializer
-from api.permissions import IsAdmin
 
 
 def generate_and_send_confirmation_code(request):
@@ -27,7 +25,7 @@ def generate_and_send_confirmation_code(request):
 
 
 class SignUpView(APIView):
-    """Вью-функция для регистрации и подтверждения по почте."""
+    """Вью-класс для регистрации и подтверждения по почте."""
     permission_classes = (AllowAny,)
 
     def post(self, request):
@@ -53,7 +51,7 @@ class TokenView(TokenViewBase):
 
 
 class UserListViewSet(viewsets.ModelViewSet):
-    '''Профиль пользователя'''
+    '''Вьюсет для пользователя'''
     queryset = YamdbUser.objects.all()
     serializer_class = AuthUserSerializer
     permission_classes = (IsAuthenticated, IsAdmin)
