@@ -29,7 +29,7 @@ class GenreViewSet(CreateListDestroyViewSet):
     serializer_class = GenreSerializer
 
 
-class TitleViewSet(ModelViewSet):
+class TitleViewSet(CreateListDestroyViewSet):
     """Вьюсет для произведений."""
 
     queryset = Title.objects.annotate(rating=Avg('reviews__score'))
