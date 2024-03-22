@@ -61,7 +61,6 @@ class UserListViewSet(viewsets.ModelViewSet):
     search_fields = ('username',)
     http_method_names = ['get', 'post', 'delete', 'patch']
     lookup_field = 'username'
-    lookup_value_regex = r'[\w\@\.\+\-]+'
 
     @action(
         methods=['GET'],

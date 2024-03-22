@@ -10,6 +10,11 @@ class AuthUserSerializer(serializers.ModelSerializer):
         model = YamdbUser
         fields = '__all__'
 
+    def validate(self, data):
+        if data.get('username') == 'me':
+            raise serializers.ValidationError('Неверное имя пользователя.')
+        return data
+
 
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=250)
