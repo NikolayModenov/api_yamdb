@@ -6,40 +6,44 @@ from api.serializers import (CategorySerializer, GenreSerializer,
                              TitleViewingSerializer, TitleEditingSerializer, ReviewSerializer, CommentSerializer)
 from api.permissions import AdminOrReadOnly
 from api.mixins import CreateListDestroyViewSet
-
+from api.filters import TitleFilter
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, filters
 
 
-class CategoryViewSet(ModelViewSet):
+class CategoryViewSet(CreateListDestroyViewSet):
     """Вьюсет для категорий."""
+    queryset = Category.objects.all().order_by('id')
+    serializer_class = CategorySerializer
     permission_classes = (AdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
 
-    queryset = Category.objects.all().order_by('id')
-    serializer_class = CategorySerializer
-
 
 class GenreViewSet(CreateListDestroyViewSet):
     """Вьюсет для жанров."""
-
-    queryset = Genre.objects.all()
+    queryset = Genre.objects.all().order_by('id')
     serializer_class = GenreSerializer
+    permission_classes = (AdminOrReadOnly,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+    lookup_field = 'slug'
 
 
-class TitleViewSet(CreateListDestroyViewSet):
+class TitleViewSet(ModelViewSet):
     """Вьюсет для произведений."""
-
-    queryset = Title.objects.annotate(rating=Avg('reviews__score'))
+    queryset = Title.objects.annotate(
+        rating=Avg('reviews__score')
+    ).order_by('rating')
     permission_classes = (AdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('year',)
+    filterset_class = TitleFilter
+    http_method_names = ('get', 'post', 'patch', 'delete')
 
     def get_serializer_class(self):
         """Определяет сериализатор в зависимости от типа запроса."""
-        if self.request.method == 'GET':
+        if self.action in ('list', 'retrieve'):
             return TitleViewingSerializer
         return TitleEditingSerializer
 
