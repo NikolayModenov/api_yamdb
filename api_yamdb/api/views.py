@@ -92,7 +92,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthorOrModeratorAndAdmin,)
 
     def get_title(self):
-        return get_object_or_404(Title, pk=self.kwargs.get('titles_id'))
+        return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
 
     def get_queryset(self):
         return self.get_title().reviews.all()
@@ -154,7 +154,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     def get_review(self):
         return get_object_or_404(Review,
                                  id=self.kwargs.get('review_id'),
-                                 title_id=self.kwargs.get('titles_id'))
+                                 title_id=self.kwargs.get('title_id'))
 
     def get_queryset(self):
         return self.get_review().comments.all()
