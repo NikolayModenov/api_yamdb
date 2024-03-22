@@ -1,8 +1,7 @@
-from rest_framework import serializers
-from reviews.models import Category, Genre, Title
 from django.db.models import Avg
+from rest_framework import serializers
 
-from reviews.models import Review, Comment
+from reviews.models import Category, Genre, Title, Review, Comment
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -55,34 +54,43 @@ class TitleEditingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Title
         fields = '__all__'
-# from rest_framework.serializers import UniqueTogetherValidator
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    # title = serializers.HiddenField(
-    #     default=serializers.SerializerMethodField())
+    """
+    Сериализатор для модели Review.
+
+    Этот сериализатор преобразует объекты модели Review в формат JSON.
+    """
+    author = serializers.SlugRelatedField(slug_field='username',
+                                          read_only=True)
 
     class Meta:
         model = Review
-        fields = ('id', 'text', 'score', 'pub_date')
+        fields = ('id', 'text', 'score', 'author', 'pub_date')
         read_only_fields = ('title',)
-        # validators = [
-        #     UniqueTogetherValidator(
-        #         queryset=Review.objects.all(),
-        #         fields=('title', 'author'),
-        #         message='Вы уже оставляли отзыв.'
-        #     )
-        # ]
 
-    # def get_title(self, obj):
-    #     return self.context['view'].kwargs.get('titles_id')
+    def create(self, validated_data):
+        title = validated_data.get('title')
+        author = validated_data.get('author')
+
+        if title and Review.objects.filter(title=title,
+                                           author=author).exists():
+            raise serializers.ValidationError("Вы уже оставляли отзыв.")
+
+        return super().create(validated_data)
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    # author = serializers.SlugRelatedField(slug_field='username',
-    #                                       read_only=True)
+    """
+    Сериализатор для модели Comment.
+
+    Этот сериализатор преобразует объекты модели Comment в формат JSON.
+    """
+    author = serializers.SlugRelatedField(slug_field='username',
+                                          read_only=True)
 
     class Meta:
         model = Comment
-        fields = ('id', 'text', 'pub_date')
+        fields = ('id', 'text', 'author', 'pub_date')
         read_only_fields = ('review',)

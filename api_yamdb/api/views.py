@@ -1,14 +1,17 @@
-from rest_framework.viewsets import ModelViewSet
 from django.db.models import Avg
-from reviews.models import Category, Genre, Title, Review
-from django_filters.rest_framework import DjangoFilterBackend
-from api.serializers import (CategorySerializer, GenreSerializer,
-                             TitleViewingSerializer, TitleEditingSerializer, ReviewSerializer, CommentSerializer)
-from api.permissions import AdminOrReadOnly
-from api.mixins import CreateListDestroyViewSet
-
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, filters
+
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import viewsets, filters, status
+from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
+
+from reviews.models import Category, Genre, Title, Review
+from api.serializers import (CategorySerializer, GenreSerializer,
+                             TitleViewingSerializer, TitleEditingSerializer,
+                             ReviewSerializer, CommentSerializer)
+from api.permissions import AdminOrReadOnly, IsAuthorOrModeratorAndAdmin
+from api.mixins import CreateListDestroyViewSet
 
 
 class CategoryViewSet(ModelViewSet):
@@ -45,7 +48,13 @@ class TitleViewSet(ModelViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
+    """
+    Представление для обработки запросов к отзывам на заголовки.
+
+    Поддерживает методы GET, POST, PATCH и DELETE.
+    """
     serializer_class = ReviewSerializer
+    permission_classes = (IsAuthorOrModeratorAndAdmin,)
 
     def get_title(self):
         return get_object_or_404(Title, pk=self.kwargs.get('titles_id'))
@@ -55,28 +64,44 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         title = self.get_title()
-        serializer.save(title=title)
-        self.update_title_rating(title)
-
-    def perform_update(self, serializer):
-        title = self.get_title()
-        serializer.save(title=title)
+        serializer.save(title=title, author=self.request.user)
         self.update_title_rating(title)
 
     def perform_destroy(self, instance):
+        title = instance.title
         instance.delete()
-        self.update_title_rating(self.get_title())
+        self.update_title_rating(title)
+
+    def update(self, request, *args, **kwargs):
+        return Response({"detail": "Метод \"PUT\" не разрешен."},
+                        status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def partial_update(self, request, *args, **kwargs):
+        serializer = self.get_serializer(self.get_object(), data=request.data,
+                                         partial=True)
+        serializer.is_valid(raise_exception=True)
+        title = self.get_title()
+        serializer.save(title=title)
+        self.update_title_rating(title)
+        return Response(serializer.data)
 
     def update_title_rating(self, title):
+        """Обновляет рейтинг заголовка на основе отзывов."""
         reviews = Review.objects.filter(title=title)
         average_score = (sum(review.score for review in reviews)
                          / reviews.count()) if reviews.count() > 0 else 0
-        title.raiting = round(average_score, 2)
+        title.rating = round(average_score, 2)
         title.save()
 
 
 class CommentViewSet(viewsets.ModelViewSet):
+    """
+    Представление для обработки запросов комментария к отзыву.
+
+    Поддерживает методы GET, POST, PATCH и DELETE.
+    """
     serializer_class = CommentSerializer
+    permission_classes = (IsAuthorOrModeratorAndAdmin,)
 
     def get_review(self):
         return get_object_or_404(Review,
@@ -87,4 +112,15 @@ class CommentViewSet(viewsets.ModelViewSet):
         return self.get_review().comments.all()
 
     def perform_create(self, serializer):
+        serializer.save(review=self.get_review(), author=self.request.user)
+
+    def update(self, request, *args, **kwargs):
+        return Response({"detail": "Метод \"PUT\" не разрешен."},
+                        status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def partial_update(self, request, *args, **kwargs):
+        serializer = self.get_serializer(self.get_object(), data=request.data,
+                                         partial=True)
+        serializer.is_valid(raise_exception=True)
         serializer.save(review=self.get_review())
+        return Response(serializer.data)
