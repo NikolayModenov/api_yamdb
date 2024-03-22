@@ -73,7 +73,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         self.update_title_rating(title)
 
     def update(self, request, *args, **kwargs):
-        return Response({"detail": "Метод \"PUT\" не разрешен."},
+        return Response({"detail": "Метод \'PUT\' не разрешен."},
                         status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def partial_update(self, request, *args, **kwargs):
@@ -115,7 +115,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         serializer.save(review=self.get_review(), author=self.request.user)
 
     def update(self, request, *args, **kwargs):
-        return Response({"detail": "Метод \"PUT\" не разрешен."},
+        return Response({"detail": "Метод \'PUT\' не разрешен."},
                         status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def partial_update(self, request, *args, **kwargs):
