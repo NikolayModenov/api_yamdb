@@ -15,7 +15,7 @@ class TitleAdmin(admin.ModelAdmin):
     list_display = ('name', 'year', 'description', 'raiting', 'category')
     fieldsets = [(None, {
         'fields': ('name', 'year', 'description', 'category')
-    }),]
+    }), ]
 
 
 @admin.register(Review)
