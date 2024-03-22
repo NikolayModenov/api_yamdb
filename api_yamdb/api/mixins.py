@@ -1,6 +1,4 @@
-from rest_framework import filters, mixins, viewsets
-
-from api.permissions import AdminOrReadOnly
+from rest_framework import mixins, viewsets
 
 
 class CreateListDestroyViewSet(mixins.CreateModelMixin,
@@ -8,8 +6,4 @@ class CreateListDestroyViewSet(mixins.CreateModelMixin,
                                mixins.DestroyModelMixin,
                                viewsets.GenericViewSet):
     """Вьюсет, позволяющий осуществлять GET, POST и DELETE запросы."""
-
-    permission_classes = (AdminOrReadOnly,)
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('name',)
-    lookup_field = 'slug'
+    pass
