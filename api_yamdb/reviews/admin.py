@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Category, Genre, Title, Review, Comment
+from .models import Category, Comment, Genre, Review, Title
 
 
 class GenreTitleTab(admin.TabularInline):
@@ -13,11 +13,9 @@ class TitleAdmin(admin.ModelAdmin):
         GenreTitleTab,
     ]
     list_display = ('name', 'year', 'description', 'raiting', 'category')
-    fieldsets = [
-        (None, {
-            'fields': ('name', 'year', 'description', 'category')
-        }),
-    ]
+    fieldsets = [(None, {
+        'fields': ('name', 'year', 'description', 'category')
+    }),]
 
 
 @admin.register(Review)

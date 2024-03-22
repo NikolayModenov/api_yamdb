@@ -1,7 +1,7 @@
 from django.db.models import Avg
 from rest_framework import serializers
 
-from reviews.models import Category, Genre, Title, Review, Comment
+from reviews.models import Category, Comment, Genre, Review, Title
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -22,16 +22,9 @@ class GenreSerializer(serializers.ModelSerializer):
 
 class TitleViewingSerializer(serializers.ModelSerializer):
     """Сериализатор произведения в режиме просмотра."""
-    category = CategorySerializer(
-        read_only=True,
-    )
-    genre = GenreSerializer(
-        many=True,
-        read_only=True,
-    )
-    rating = serializers.SerializerMethodField(
-        read_only=True,
-    )
+    category = CategorySerializer(read_only=True,)
+    genre = GenreSerializer(many=True, read_only=True,)
+    rating = serializers.SerializerMethodField(read_only=True,)
 
     class Meta:
         model = Title
@@ -59,11 +52,11 @@ class TitleEditingSerializer(serializers.ModelSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     """
     Сериализатор для модели Review.
-
     Этот сериализатор преобразует объекты модели Review в формат JSON.
     """
-    author = serializers.SlugRelatedField(slug_field='username',
-                                          read_only=True)
+    author = serializers.SlugRelatedField(
+        slug_field='username', read_only=True
+    )
 
     class Meta:
         model = Review
@@ -74,8 +67,9 @@ class ReviewSerializer(serializers.ModelSerializer):
         title = validated_data.get('title')
         author = validated_data.get('author')
 
-        if title and Review.objects.filter(title=title,
-                                           author=author).exists():
+        if title and Review.objects.filter(
+            title=title, author=author
+        ).exists():
             raise serializers.ValidationError("Вы уже оставляли отзыв.")
 
         return super().create(validated_data)
@@ -84,11 +78,11 @@ class ReviewSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     """
     Сериализатор для модели Comment.
-
     Этот сериализатор преобразует объекты модели Comment в формат JSON.
     """
-    author = serializers.SlugRelatedField(slug_field='username',
-                                          read_only=True)
+    author = serializers.SlugRelatedField(
+        slug_field='username', read_only=True
+    )
 
     class Meta:
         model = Comment

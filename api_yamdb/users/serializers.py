@@ -26,7 +26,5 @@ class TokenSerializer(serializers.Serializer):
         user = get_object_or_404(YamdbUser, username=username)
 
         if not default_token_generator.check_token(user, confirmation_code):
-            raise serializers.ValidationError(
-                'Неверный код подтверждения.'
-            )
+            raise serializers.ValidationError('Неверный код подтверждения.')
         return data

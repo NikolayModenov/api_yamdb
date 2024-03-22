@@ -1,5 +1,4 @@
-from django.core.validators import MinValueValidator, MaxValueValidator
-from django.contrib.auth import get_user_model
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from reviews.validators import validate_year
@@ -35,28 +34,23 @@ class Genre(models.Model):
     def __str__(self):
         return self.name[:30]
 
-    def __str__(self) -> str:
-        return self.name
-
 
 class Title(models.Model):
     """Модель произведения."""
 
     name = models.CharField(max_length=256)
     year = models.PositiveSmallIntegerField(
-        verbose_name='Год выпуска',
-        validators=(validate_year,),)
-    # category = models.OneToOneField(
-    #     Category,
-    #     verbose_name='Категория произведения',
-    #     on_delete=models.SET_NULL,
-    description = models.TextField(verbose_name='Краткое описание', blank=True, null=True)
+        verbose_name='Год выпуска', validators=(validate_year,),
+        )
+    description = models.TextField(
+        verbose_name='Краткое описание', blank=True, null=True
+    )
     genre = models.ManyToManyField(Genre, through='GenreTitle')
     raiting = models.DecimalField(
-        max_digits=4, decimal_places=2, default=0)
+        max_digits=4, decimal_places=2, default=0
+    )
     category = models.ForeignKey(
-        Category, on_delete=models.SET_NULL,
-        null=True
+        Category, on_delete=models.SET_NULL, null=True
     )
 
     class Meta:
@@ -98,10 +92,9 @@ class Review(models.Model):
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
         default_related_name = 'reviews'
-        constraints = [
-            models.UniqueConstraint(fields=['title', 'author'],
-                                    name='unique_title_author')
-        ]
+        constraints = [models.UniqueConstraint(
+            fields=['title', 'author'], name='unique_title_author'
+        )]
 
     def __str__(self) -> str:
         return f'{self.title.name}'
@@ -123,8 +116,9 @@ class Comment(models.Model):
         on_delete=models.CASCADE,
         verbose_name='Автор'
     )
-    pub_date = models.DateTimeField(auto_now_add=True,
-                                    verbose_name='Дата добавления комментария')
+    pub_date = models.DateTimeField(
+        auto_now_add=True, verbose_name='Дата добавления комментария'
+    )
 
     class Meta:
         verbose_name = 'Комментарий'

@@ -1,16 +1,16 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-from rest_framework import status, filters, viewsets
+from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework_simplejwt.views import TokenViewBase
 from rest_framework.views import APIView
+from rest_framework_simplejwt.views import TokenViewBase
 
 from api.permissions import IsAdmin
-from .models import YamdbUser
-from .serializers import AuthUserSerializer, TokenSerializer
+from users.models import YamdbUser
+from users.serializers import AuthUserSerializer, TokenSerializer
 
 
 def generate_and_send_confirmation_code(request):
