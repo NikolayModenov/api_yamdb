@@ -12,37 +12,42 @@ from api.serializers import (CategorySerializer, GenreSerializer,
                              ReviewSerializer, CommentSerializer)
 from api.permissions import AdminOrReadOnly, IsAuthorOrModeratorAndAdmin
 from api.mixins import CreateListDestroyViewSet
+from .filters import TitleFilter
 
 
-class CategoryViewSet(ModelViewSet):
+class CategoryViewSet(CreateListDestroyViewSet):
     """Вьюсет для категорий."""
+    queryset = Category.objects.all().order_by('id')
+    serializer_class = CategorySerializer
     permission_classes = (AdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
 
-    queryset = Category.objects.all().order_by('id')
-    serializer_class = CategorySerializer
-
 
 class GenreViewSet(CreateListDestroyViewSet):
     """Вьюсет для жанров."""
-
-    queryset = Genre.objects.all()
+    queryset = Genre.objects.all().order_by('id')
     serializer_class = GenreSerializer
+    permission_classes = (AdminOrReadOnly,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+    lookup_field = 'slug'
 
 
 class TitleViewSet(ModelViewSet):
     """Вьюсет для произведений."""
-
-    queryset = Title.objects.annotate(rating=Avg('reviews__score'))
+    queryset = Title.objects.annotate(
+        rating=Avg('reviews__score')
+    ).order_by('rating')
     permission_classes = (AdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('year',)
+    filterset_class = TitleFilter
+    http_method_names = ('get', 'post', 'patch', 'delete')
 
     def get_serializer_class(self):
         """Определяет сериализатор в зависимости от типа запроса."""
-        if self.request.method == 'GET':
+        if self.action in ('list', 'retrieve'):
             return TitleViewingSerializer
         return TitleEditingSerializer
 
@@ -57,7 +62,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthorOrModeratorAndAdmin,)
 
     def get_title(self):
-        return get_object_or_404(Title, pk=self.kwargs.get('titles_id'))
+        return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
 
     def get_queryset(self):
         return self.get_title().reviews.all()
@@ -106,7 +111,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     def get_review(self):
         return get_object_or_404(Review,
                                  id=self.kwargs.get('review_id'),
-                                 title_id=self.kwargs.get('titles_id'))
+                                 title_id=self.kwargs.get('title_id'))
 
     def get_queryset(self):
         return self.get_review().comments.all()

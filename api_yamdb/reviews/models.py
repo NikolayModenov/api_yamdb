@@ -50,7 +50,7 @@ class Title(models.Model):
     #     Category,
     #     verbose_name='Категория произведения',
     #     on_delete=models.SET_NULL,
-    # description = models.TextField()
+    description = models.TextField(verbose_name='Краткое описание', blank=True, null=True)
     genre = models.ManyToManyField(Genre, through='GenreTitle')
     raiting = models.DecimalField(
         max_digits=4, decimal_places=2, default=0)
@@ -131,5 +131,5 @@ class Comment(models.Model):
         verbose_name_plural = 'Комментарии'
         default_related_name = 'comments'
 
-    def __str__(self) -> str:
+    def str(self) -> str:
         return self.review.text

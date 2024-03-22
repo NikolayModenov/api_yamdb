@@ -8,7 +8,7 @@ from .models import YamdbUser
 class AuthUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = YamdbUser
-        fields = '__all__'
+        fields = 'username', 'email', 'role', 'first_name', 'last_name', 'bio'
 
     def validate(self, data):
         if data.get('username') == 'me':
