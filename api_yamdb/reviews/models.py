@@ -79,6 +79,7 @@ class Review(models.Model):
         on_delete=models.CASCADE,
         verbose_name='Автор'
     )
+    text = models.TextField('Описания для отзыва')
     score = models.PositiveSmallIntegerField(
         verbose_name='Оценка',
         validators=[MinValueValidator(1), MaxValueValidator(10)]
@@ -119,6 +120,9 @@ class Comment(models.Model):
     pub_date = models.DateTimeField(
         auto_now_add=True, verbose_name='Дата добавления комментария'
     )
+    text = models.TextField('Описание комментария')
+    pub_date = models.DateTimeField(auto_now_add=True,
+                                    verbose_name='Дата добавления комментария')
 
     class Meta:
         verbose_name = 'Комментарий'
