@@ -8,13 +8,17 @@ from api.permissions import AdminOrReadOnly
 from api.mixins import CreateListDestroyViewSet
 
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets
+from rest_framework import viewsets, filters
 
 
-class CategoryViewSet(CreateListDestroyViewSet):
+class CategoryViewSet(ModelViewSet):
     """Вьюсет для категорий."""
+    permission_classes = (AdminOrReadOnly,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+    lookup_field = 'slug'
 
-    queryset = Category.objects.all()
+    queryset = Category.objects.all().order_by('id')
     serializer_class = CategorySerializer
 
 
