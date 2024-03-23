@@ -5,28 +5,28 @@ from django.db import models
 
 from reviews.validators import validate_year, validate_username
 
+
+USER = 'user'
+MODERATOR = 'moderator'
+ADMIN = 'admin'
+
+
 ROLES = (
-    ('user', 'Пользователь'),
-    ('moderator', 'Модератор'),
-    ('admin', 'Администратор'),
+    (USER, 'Пользователь'),
+    (MODERATOR, 'Модератор'),
+    (ADMIN, 'Администратор'),
 )
 
 MAX_LENGTH = 100
 
 
 class YamdbUser(AbstractUser):
-    first_name = models.CharField(
-        verbose_name='Имя', max_length=MAX_LENGTH, blank=True, null=True
-    )
-    last_name = models.CharField(
-        verbose_name='Фамилия', max_length=MAX_LENGTH, blank=True, null=True
-    )
     email = models.EmailField(
         verbose_name='Адрес электронной почты.', max_length=254, unique=True,
     )
     bio = models.TextField('Характеристика', blank=True, null=True)
     role = models.CharField(
-        default="user", choices=ROLES,
+        default=USER, choices=ROLES,
         max_length=max(map(len, dict(ROLES).values()))
     )
     confirmation_code = models.CharField(
@@ -44,6 +44,18 @@ class YamdbUser(AbstractUser):
 
     def __str__(self):
         return self.username[:30]
+
+    @property
+    def is_user(self):
+        return self.role == USER
+
+    @property
+    def is_moderator(self):
+        return self.role == MODERATOR
+
+    @property
+    def is_admin(self):
+        return self.role == ADMIN or self.is_superuser or self.is_staff
 
 
 class Category(models.Model):
