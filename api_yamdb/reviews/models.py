@@ -10,7 +10,6 @@ USER = 'user'
 MODERATOR = 'moderator'
 ADMIN = 'admin'
 
-
 ROLES = (
     (USER, 'Пользователь'),
     (MODERATOR, 'Модератор'),
@@ -18,6 +17,9 @@ ROLES = (
 )
 
 MAX_LENGTH = 100
+TEXT_SIZE = 30
+MIN_VALUE_VALIDATOR = 1
+MAX_VALUE_VALIDATOR = 10
 
 
 class YamdbUser(AbstractUser):
@@ -56,10 +58,6 @@ class YamdbUser(AbstractUser):
     @property
     def is_admin(self):
         return self.role == ADMIN or self.is_superuser or self.is_staff
-
-TEXT_SIZE = 30
-MIN_VALUE_VALIDATOR = 1
-MAX_VALUE_VALIDATOR = 10
 
 
 class Category(models.Model):
