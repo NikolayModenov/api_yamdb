@@ -4,6 +4,10 @@ from django.db import models
 from reviews.validators import validate_year
 from users.models import YamdbUser
 
+TEXT_SIZE = 30
+MIN_VALUE_VALIDATOR = 1
+MAX_VALUE_VALIDATOR = 10
+
 
 class Category(models.Model):
     """Модель категории."""
@@ -68,28 +72,33 @@ class GenreTitle(models.Model):
     title = models.ForeignKey(Title, on_delete=models.CASCADE)
 
 
-class Review(models.Model):
-    title = models.ForeignKey(
-        Title, on_delete=models.CASCADE,
-        verbose_name='Произведение'
-    )
-    text = models.TextField('Описания для отзыва')
-    author = models.ForeignKey(
-        YamdbUser,
-        on_delete=models.CASCADE,
-        verbose_name='Автор'
-    )
-    text = models.TextField('Описания для отзыва')
-    score = models.PositiveSmallIntegerField(
-        verbose_name='Оценка',
-        validators=[MinValueValidator(1), MaxValueValidator(10)]
-    )
-    pub_date = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата добавления отзыва'
-    )
+class AbstractBaseReviewComment(models.Model):
+    """Базовая абстрактная модель комментариев, отзыв."""
+    text = models.TextField('Описания')
+    author = models.ForeignKey(YamdbUser, on_delete=models.CASCADE,
+                               verbose_name='Автор')
+    pub_date = models.DateTimeField(auto_now_add=True,
+                                    verbose_name='Дата добавления')
 
     class Meta:
+        abstract = True
+        ordering = ('-pub_date',)
+
+    def __str__(self) -> str:
+        return self.text[:TEXT_SIZE]
+
+
+class Review(AbstractBaseReviewComment):
+    """Модель отзыва на произведение."""
+    title = models.ForeignKey(Title, on_delete=models.CASCADE,
+                              verbose_name='Произведение')
+    score = models.PositiveSmallIntegerField(
+        verbose_name='Оценка',
+        validators=[MinValueValidator(MIN_VALUE_VALIDATOR),
+                    MaxValueValidator(MAX_VALUE_VALIDATOR)]
+    )
+
+    class Meta(AbstractBaseReviewComment.Meta):
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
         default_related_name = 'reviews'
@@ -97,37 +106,13 @@ class Review(models.Model):
             fields=['title', 'author'], name='unique_title_author'
         )]
 
-    def __str__(self) -> str:
-        return f'{self.title.name}'
 
+class Comment(AbstractBaseReviewComment):
+    """Модель комментарии на отзыва."""
+    review = models.ForeignKey(Review, on_delete=models.CASCADE,
+                               verbose_name='Отзыв')
 
-class Comment(models.Model):
-    review = models.ForeignKey(
-        Review, on_delete=models.CASCADE,
-        verbose_name='Отзыв'
-    )
-    text = models.TextField()
-    author = models.ForeignKey(
-        YamdbUser, on_delete=models.CASCADE,
-        verbose_name='Автор'
-    )
-    text = models.TextField('Описание комментария')
-    author = models.ForeignKey(
-        YamdbUser,
-        on_delete=models.CASCADE,
-        verbose_name='Автор'
-    )
-    pub_date = models.DateTimeField(
-        auto_now_add=True, verbose_name='Дата добавления комментария'
-    )
-    text = models.TextField('Описание комментария')
-    pub_date = models.DateTimeField(auto_now_add=True,
-                                    verbose_name='Дата добавления комментария')
-
-    class Meta:
+    class Meta(AbstractBaseReviewComment.Meta):
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
         default_related_name = 'comments'
-
-    def str(self) -> str:
-        return self.review.text
