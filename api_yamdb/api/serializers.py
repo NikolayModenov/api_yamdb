@@ -114,41 +114,33 @@ class TitleEditingSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    """
-    Сериализатор для модели Review.
-    Этот сериализатор преобразует объекты модели Review в формат JSON.
-    """
-    author = serializers.SlugRelatedField(
-        slug_field='username', read_only=True
-    )
+    """Сериализатор для модели Review."""
+    author = serializers.SlugRelatedField(slug_field='username',
+                                          read_only=True)
 
     class Meta:
         model = Review
         fields = ('id', 'text', 'score', 'author', 'pub_date')
-        read_only_fields = ('title',)
 
-    def create(self, validated_data):
-        title = validated_data.get('title')
-        author = validated_data.get('author')
+    def validate(self, attrs):
+        title = get_object_or_404(
+            Title,
+            pk=self.context['view'].kwargs.get('title_id')
+        )
+        request = self.context['request']
+        if request.method == 'POST':
+            if Review.objects.filter(title=title,
+                                     author=request.user).exists():
+                raise serializers.ValidationError("Вы уже оставляли отзыв.")
 
-        if title and Review.objects.filter(
-            title=title, author=author
-        ).exists():
-            raise serializers.ValidationError("Вы уже оставляли отзыв.")
-
-        return super().create(validated_data)
+        return attrs
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    """
-    Сериализатор для модели Comment.
-    Этот сериализатор преобразует объекты модели Comment в формат JSON.
-    """
-    author = serializers.SlugRelatedField(
-        slug_field='username', read_only=True
-    )
+    """Сериализатор для модели Comment."""
+    author = serializers.SlugRelatedField(slug_field='username',
+                                          read_only=True)
 
     class Meta:
         model = Comment
         fields = ('id', 'text', 'author', 'pub_date')
-        read_only_fields = ('review',)
