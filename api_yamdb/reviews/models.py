@@ -5,11 +5,19 @@ from reviews.validators import validate_year
 from users.models import YamdbUser
 
 
-class Category(models.Model):
+class Category(models.Model): # Если выводить общие поля в жанре и категории в отдельный класс, не создастся ли новая таблица в бд.
     """Модель категории."""
 
-    name = models.CharField(max_length=256)
-    slug = models.SlugField(unique=True, max_length=50)
+    name = models.CharField(
+        max_length=256,
+        verbose_name='Hазвание категории',
+        db_index=True,
+    )
+    slug = models.SlugField(
+        max_length=50,
+        verbose_name='Индекс категории',
+        unique=True,
+    )
 
     class Meta:
         verbose_name = 'Категория'
@@ -23,8 +31,16 @@ class Category(models.Model):
 class Genre(models.Model):
     """Модель жанра."""
 
-    name = models.CharField(max_length=256, verbose_name='Hазвание жанра')
-    slug = models.SlugField(unique=True, max_length=50, verbose_name='slug')
+    name = models.CharField(
+        max_length=256,
+        verbose_name='Hазвание категории',
+        db_index=True,
+    )
+    slug = models.SlugField(
+        max_length=50,
+        verbose_name='Индекс категории',
+        unique=True,
+    )
 
     class Meta:
         verbose_name = 'Жанр'
@@ -45,10 +61,14 @@ class Title(models.Model):
     description = models.TextField(
         verbose_name='Краткое описание', blank=True, null=True
     )
-    genre = models.ManyToManyField(Genre, through='GenreTitle')
-    raiting = models.DecimalField(
-        max_digits=4, decimal_places=2, default=0
+    genre = models.ManyToManyField(
+        Genre,
+        related_name='titles',
+        verbose_name='Жанр произведения',
     )
+    # raiting = models.DecimalField(
+    #     max_digits=4, decimal_places=2, default=0
+    # )
     category = models.ForeignKey(
         Category, on_delete=models.SET_NULL, null=True
     )
@@ -57,7 +77,7 @@ class Title(models.Model):
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
         default_related_name = 'titles'
-        ordering = ('-year',)
+        ordering = ('-year', 'name')
 
     def __str__(self):
         return self.name[:30]

@@ -22,13 +22,29 @@ class GenreSerializer(serializers.ModelSerializer):
 
 class TitleViewingSerializer(serializers.ModelSerializer):
     """Сериализатор произведения в режиме просмотра."""
-    category = CategorySerializer(read_only=True,)
-    genre = GenreSerializer(many=True, read_only=True,)
-    rating = serializers.SerializerMethodField(read_only=True,)
+
+    category = CategorySerializer(
+        read_only=True,
+    )
+    genre = GenreSerializer(
+        many=True,
+        read_only=True,
+    )
+    rating = serializers.SerializerMethodField(
+        read_only=True,
+    )
 
     class Meta:
         model = Title
-        fields = '__all__'
+        fields = (
+            'id',
+            'name',
+            'year',
+            'rating',
+            'description',
+            'genre',
+            'category'
+        )
 
     def get_rating(self, obj):
         obj = obj.reviews.all().aggregate(rating=Avg('score'))
@@ -37,6 +53,7 @@ class TitleViewingSerializer(serializers.ModelSerializer):
 
 class TitleEditingSerializer(serializers.ModelSerializer):
     """Сериализатор произведения в режиме создания/редактирования."""
+
     category = serializers.SlugRelatedField(
         queryset=Category.objects.all(), slug_field='slug'
     )
@@ -46,7 +63,14 @@ class TitleEditingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        fields = '__all__'
+        fields = (
+            'id',
+            'name',
+            'year',
+            'description',
+            'genre',
+            'category'
+        )
 
 
 class ReviewSerializer(serializers.ModelSerializer):
