@@ -92,29 +92,16 @@ class CommentViewSet(AbstractReviewCommentViewSet):
     serializer_class = CommentSerializer
 
     def get_review(self):
-        return get_object_or_404(Review,
-                                 pk=self.kwargs.get('review_id'),
-                                 title_id=self.kwargs.get('title_id'))
+        return get_object_or_404(
+            Review, pk=self.kwargs.get('review_id'),
+            title_id=self.kwargs.get('title_id')
+        )
 
     def get_queryset(self):
         return self.get_review().comments.all()
 
     def perform_create(self, serializer):
         serializer.save(review=self.get_review(), author=self.request.user)
-
-    def update(self, request, *args, **kwargs):
-        return Response(
-            {"detail": "Метод \'PUT\' не разрешен."},
-            status=status.HTTP_405_METHOD_NOT_ALLOWED
-        )
-
-    def partial_update(self, request, *args, **kwargs):
-        serializer = self.get_serializer(
-            self.get_object(), data=request.data, partial=True
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save(review=self.get_review())
-        return Response(serializer.data)
 
 
 class SignUpView(APIView):
