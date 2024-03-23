@@ -1,8 +1,49 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 
-from reviews.validators import validate_year
-from users.models import YamdbUser
+from reviews.validators import validate_year, validate_username
+
+ROLES = (
+    ('user', 'Пользователь'),
+    ('moderator', 'Модератор'),
+    ('admin', 'Администратор'),
+)
+
+MAX_LENGTH = 100
+
+
+class YamdbUser(AbstractUser):
+    first_name = models.CharField(
+        verbose_name='Имя', max_length=MAX_LENGTH, blank=True, null=True
+    )
+    last_name = models.CharField(
+        verbose_name='Фамилия', max_length=MAX_LENGTH, blank=True, null=True
+    )
+    email = models.EmailField(
+        verbose_name='Адрес электронной почты.', max_length=254, unique=True,
+    )
+    bio = models.TextField('Характеристика', blank=True, null=True)
+    role = models.CharField(
+        default="user", choices=ROLES,
+        max_length=max(map(len, dict(ROLES).values()))
+    )
+    confirmation_code = models.CharField(
+        'Код подтверждения', max_length=200, null=True, blank=True
+    )
+    username = models.CharField(
+        verbose_name='Логин', max_length=MAX_LENGTH, unique=True,
+        validators=[UnicodeUsernameValidator(), validate_username]
+    )
+
+    class Meta:
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+        ordering = ('username',)
+
+    def __str__(self):
+        return self.username[:30]
 
 
 class Category(models.Model):
