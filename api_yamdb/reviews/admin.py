@@ -47,11 +47,3 @@ class CategoryAdmin(admin.ModelAdmin):
         'name',
         'slug'
     )
-
-
-admin.site.register(YamdbUser)
-admin.site.register(Title)
-admin.site.register(Category)
-admin.site.register(Genre)
-admin.site.register(Comment)
-admin.site.register(Review)

@@ -1,6 +1,5 @@
 import re
 
-from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from rest_framework import serializers
