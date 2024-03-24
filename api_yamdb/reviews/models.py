@@ -127,11 +127,6 @@ class Title(models.Model):
         return self.name[:30]
 
 
-class GenreTitle(models.Model):
-    genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
-    title = models.ForeignKey(Title, on_delete=models.CASCADE)
-
-
 class AbstractBaseReviewComment(models.Model):
     """Базовая абстрактная модель комментариев, отзыв."""
     text = models.TextField('Описание')
