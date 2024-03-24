@@ -106,6 +106,15 @@ class TitleViewingSerializer(serializers.ModelSerializer):
             'genre',
             'category'
         )
+        read_only_fields = (
+            'id',
+            'name',
+            'year',
+            'rating',
+            'description',
+            'genre',
+            'category',
+        )
 
 
 class TitleEditingSerializer(serializers.ModelSerializer):
