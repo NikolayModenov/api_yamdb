@@ -18,8 +18,8 @@ ROLES = (
 
 MAX_LENGTH = 100
 TEXT_SIZE = 30
-MIN_VALUE_VALIDATOR = 1
-MAX_VALUE_VALIDATOR = 10
+MIN_SCORE_VALUE = 1
+MAX_SCORE_VALUE = 10
 
 
 class YamdbUser(AbstractUser):
@@ -127,7 +127,7 @@ class Title(models.Model):
         return self.name[:30]
 
 
-class AbstractBaseReviewComment(models.Model):
+class ReviewCommentBase(models.Model):
     """Базовая абстрактная модель комментариев, отзыв."""
     text = models.TextField('Описание')
     author = models.ForeignKey(YamdbUser, on_delete=models.CASCADE,
@@ -143,17 +143,17 @@ class AbstractBaseReviewComment(models.Model):
         return self.text[:TEXT_SIZE]
 
 
-class Review(AbstractBaseReviewComment):
+class Review(ReviewCommentBase):
     """Модель отзыва на произведение."""
     title = models.ForeignKey(Title, on_delete=models.CASCADE,
                               verbose_name='Произведение')
     score = models.PositiveSmallIntegerField(
         verbose_name='Оценка',
-        validators=[MinValueValidator(MIN_VALUE_VALIDATOR),
-                    MaxValueValidator(MAX_VALUE_VALIDATOR)]
+        validators=[MinValueValidator(MIN_SCORE_VALUE),
+                    MaxValueValidator(MAX_SCORE_VALUE)]
     )
 
-    class Meta(AbstractBaseReviewComment.Meta):
+    class Meta(ReviewCommentBase.Meta):
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
         default_related_name = 'reviews'
@@ -162,12 +162,12 @@ class Review(AbstractBaseReviewComment):
         )]
 
 
-class Comment(AbstractBaseReviewComment):
+class Comment(ReviewCommentBase):
     """Модель комментарии на отзыва."""
     review = models.ForeignKey(Review, on_delete=models.CASCADE,
                                verbose_name='Отзыв')
 
-    class Meta(AbstractBaseReviewComment.Meta):
+    class Meta(ReviewCommentBase.Meta):
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
         default_related_name = 'comments'
