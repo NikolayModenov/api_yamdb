@@ -1,6 +1,5 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth.models import AbstractUser
-from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 
 from reviews.validators import validate_year, validate_username
@@ -18,8 +17,8 @@ ROLES = (
 
 MAX_LENGTH = 100
 TEXT_SIZE = 30
-MIN_VALUE_VALIDATOR = 1
-MAX_VALUE_VALIDATOR = 10
+MIN_SCORE_VALUE = 1
+MAX_SCORE_VALUE = 10
 
 
 class YamdbUser(AbstractUser):
@@ -28,15 +27,15 @@ class YamdbUser(AbstractUser):
     )
     bio = models.TextField('Характеристика', blank=True, null=True)
     role = models.CharField(
-        'Должность', default=USER, choices=ROLES,
-        max_length=max(map(len, dict(ROLES).values()))
+        'Роль', default=USER, choices=ROLES,
+        max_length=max(map(len, dict(ROLES).keys()))
     )
     confirmation_code = models.CharField(
         'Код подтверждения', max_length=200, null=True, blank=True
     )
     username = models.CharField(
         verbose_name='Логин', max_length=MAX_LENGTH, unique=True,
-        validators=[UnicodeUsernameValidator(), validate_username]
+        validators=[validate_username]
     )
 
     class Meta:
@@ -57,7 +56,7 @@ class YamdbUser(AbstractUser):
 
     @property
     def is_admin(self):
-        return self.role == ADMIN or self.is_superuser or self.is_staff
+        return self.role == ADMIN or self.is_staff
 
 
 class CategoryGenreBase(models.Model):
@@ -85,7 +84,7 @@ class CategoryGenreBase(models.Model):
 class Category(CategoryGenreBase):
     """Модель категории."""
 
-    class Meta:
+    class Meta(CategoryGenreBase.Meta):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
@@ -93,7 +92,7 @@ class Category(CategoryGenreBase):
 class Genre(CategoryGenreBase):
     """Модель жанра."""
 
-    class Meta:
+    class Meta(CategoryGenreBase.Meta):
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
@@ -127,7 +126,7 @@ class Title(models.Model):
         return self.name[:30]
 
 
-class AbstractBaseReviewComment(models.Model):
+class ReviewCommentBase(models.Model):
     """Базовая абстрактная модель комментариев, отзыв."""
     text = models.TextField('Описание')
     author = models.ForeignKey(YamdbUser, on_delete=models.CASCADE,
@@ -143,17 +142,17 @@ class AbstractBaseReviewComment(models.Model):
         return self.text[:TEXT_SIZE]
 
 
-class Review(AbstractBaseReviewComment):
+class Review(ReviewCommentBase):
     """Модель отзыва на произведение."""
     title = models.ForeignKey(Title, on_delete=models.CASCADE,
                               verbose_name='Произведение')
     score = models.PositiveSmallIntegerField(
         verbose_name='Оценка',
-        validators=[MinValueValidator(MIN_VALUE_VALIDATOR),
-                    MaxValueValidator(MAX_VALUE_VALIDATOR)]
+        validators=[MinValueValidator(MIN_SCORE_VALUE),
+                    MaxValueValidator(MAX_SCORE_VALUE)]
     )
 
-    class Meta(AbstractBaseReviewComment.Meta):
+    class Meta(ReviewCommentBase.Meta):
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
         default_related_name = 'reviews'
@@ -162,12 +161,12 @@ class Review(AbstractBaseReviewComment):
         )]
 
 
-class Comment(AbstractBaseReviewComment):
+class Comment(ReviewCommentBase):
     """Модель комментарии на отзыва."""
     review = models.ForeignKey(Review, on_delete=models.CASCADE,
                                verbose_name='Отзыв')
 
-    class Meta(AbstractBaseReviewComment.Meta):
+    class Meta(ReviewCommentBase.Meta):
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
         default_related_name = 'comments'

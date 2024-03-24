@@ -1,6 +1,10 @@
+import re
+
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from rest_framework import serializers
+
+from api_yamdb.settings import URL_PATH_NAME
 
 
 def validate_year(value):
@@ -9,10 +13,20 @@ def validate_year(value):
     if value > timezone.now().year:
         raise ValidationError(
             f'Год произведения - {value}, '
-            f'должен быть меньше текущего года - {timezone.now().year}.'
+            f'не должен быть больше текущего года - {timezone.now().year}.'
         )
+    return value
 
 
 def validate_username(username):
-    if username == 'me':
-        raise serializers.ValidationError('Неверное имя пользователя.')
+    if username == URL_PATH_NAME:
+        raise serializers.ValidationError(
+            f'Неверное имя пользователя: {username}.'
+        )
+    if not re.fullmatch(r'^[\w.@+-]+\Z', username):
+        raise ValidationError(
+            'Введите действительное имя пользователя. '
+            'username может содержать только латинские буквы, '
+            'символы @/./+/-/_ и цифры.'
+        )
+    return username

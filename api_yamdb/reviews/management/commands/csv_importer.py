@@ -1,15 +1,13 @@
 import csv
 
 from django.core.management.base import BaseCommand
-from reviews.models import Category, Comment, Genre, GenreTitle, Review, Title
+from reviews.models import Category, Comment, Genre, Review, Title, YamdbUser
 
-from users.models import YamdbUser
 
 model_csv_equal = {
     'static/data/category.csv': Category,
     'static/data/genre.csv': Genre,
     'static/data/titles.csv': Title,
-    'static/data/genre_title.csv': GenreTitle,
     'static/data/users.csv': YamdbUser,
     'static/data/review.csv': Review,
     'static/data/comments.csv': Comment,
