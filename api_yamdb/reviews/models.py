@@ -1,6 +1,5 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth.models import AbstractUser
-from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 
 from reviews.validators import validate_year, validate_username
@@ -28,15 +27,15 @@ class YamdbUser(AbstractUser):
     )
     bio = models.TextField('Характеристика', blank=True, null=True)
     role = models.CharField(
-        'Должность', default=USER, choices=ROLES,
-        max_length=max(map(len, dict(ROLES).values()))
+        'Роль', default=USER, choices=ROLES,
+        max_length=max(map(len, dict(ROLES).keys()))
     )
     confirmation_code = models.CharField(
         'Код подтверждения', max_length=200, null=True, blank=True
     )
     username = models.CharField(
         verbose_name='Логин', max_length=MAX_LENGTH, unique=True,
-        validators=[UnicodeUsernameValidator(), validate_username]
+        validators=[validate_username]
     )
 
     class Meta:
@@ -57,7 +56,7 @@ class YamdbUser(AbstractUser):
 
     @property
     def is_admin(self):
-        return self.role == ADMIN or self.is_superuser or self.is_staff
+        return self.role == ADMIN or self.is_staff
 
 
 class CategoryGenreBase(models.Model):

@@ -20,17 +20,15 @@ from api.serializers import (
 )
 from api.viewsets import AbstractReviewCommentViewSet
 from reviews.models import Category, Genre, Review, Title, YamdbUser
-
-
-BAD_WORD = 'me'
+from api_yamdb.settings import URL_PATH_NAME, DEFAULT_FROM_EMAIL
 
 
 def send_confirmation_code(user, confirmation_code):
     """Генерация кода подтверждения и его отправка."""
     send_mail(
-        'Yamdb. Confirmation code',
-        f'confirmation_code: {confirmation_code}',
-        from_email=None,
+        'Yamdb. Код подтверждения',
+        f'Код подтверждения: {confirmation_code}',
+        from_email=DEFAULT_FROM_EMAIL,
         recipient_list=[user.email]
     )
 
@@ -117,10 +115,7 @@ class SignUpView(APIView):
         """Обрабатывает POST-запрос для регистрации пользователя."""
         serializer = UserRegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        user = get_object_or_404(
-            YamdbUser, username=request.data.get('username')
-        )
+        user = serializer.save()
         confirmation_code = default_token_generator.make_token(user)
         send_confirmation_code(user, confirmation_code)
         return Response(request.data, status=status.HTTP_200_OK)
@@ -146,11 +141,12 @@ class UserListViewSet(viewsets.ModelViewSet):
         methods=['GET'],
         detail=False,
         permission_classes=[IsAuthenticated],
-        url_path=BAD_WORD
+        url_path=URL_PATH_NAME
     )
     def get_current_user_info(self, request):
-        serializer = self.get_serializer(request.user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(
+            self.get_serializer(request.user).data, status=status.HTTP_200_OK
+        )
 
     @get_current_user_info.mapping.patch
     def update_current_user_info(self, request):
