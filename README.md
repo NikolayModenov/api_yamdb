@@ -65,7 +65,7 @@
 1. Клонируйте репозиторий на локальную машину:
 
     ```bash
-    git clone 
+    git clone git@github.com:NikolayModenov/api_yamdb.git
     ```
 
 2. Установить зависимости из файла requirements.txt:
@@ -90,17 +90,19 @@
 
 Вызовите из терминала в соответствующей папке команду:
 
-`python manage.py csv_importer`
+```bash
+python manage.py csv_importer
+```
 
 ## Спецификация API сервера 
 
-`http://127.0.0.1:8000/api/v1/`
+`http://127.0.0.1:8000/redoc/`
 
 ## Список приложений используемых для разработки данного сервиса
 
-Django==3.2
-djangorestframework==3.12.4
-djangorestframework-simplejwt==4.7.2
-PyJWT==2.1.0
-pytest==6.2.4
-pytest-django==4.4.0
+Django 3.2
+djangorestframework 3.12.4
+djangorestframework-simplejwt 4.7.2
+PyJWT 2.1.0
+pytest 6.2.4
+pytest-django 4.4.0
