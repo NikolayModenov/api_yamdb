@@ -94,7 +94,7 @@ class TitleViewingSerializer(serializers.ModelSerializer):
         many=True,
         read_only=True,
     )
-    rating = serializers.SerializerMethodField(
+    rating = serializers.IntegerField(
         read_only=True,
     )
 
@@ -109,9 +109,6 @@ class TitleViewingSerializer(serializers.ModelSerializer):
             'genre',
             'category'
         )
-
-    def get_rating(self, data):
-        return data.reviews.aggregate(rating=Avg('score'))['rating']
 
 
 class TitleEditingSerializer(serializers.ModelSerializer):

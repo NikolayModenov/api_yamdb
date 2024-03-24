@@ -35,7 +35,7 @@ def send_confirmation_code(user, confirmation_code):
     )
 
 
-class CreateListDestroyViewSet(mixins.CreateModelMixin,
+class CategoryGenreBaseViewSet(mixins.CreateModelMixin,
                                mixins.ListModelMixin,
                                mixins.DestroyModelMixin,
                                viewsets.GenericViewSet):
@@ -47,14 +47,14 @@ class CreateListDestroyViewSet(mixins.CreateModelMixin,
     lookup_field = 'slug'
 
 
-class CategoryViewSet(CreateListDestroyViewSet):
+class CategoryViewSet(CategoryGenreBaseViewSet):
     """Вьюсет для категорий."""
 
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
-class GenreViewSet(CreateListDestroyViewSet):
+class GenreViewSet(CategoryGenreBaseViewSet):
     """Вьюсет для жанров."""
 
     queryset = Genre.objects.all()
