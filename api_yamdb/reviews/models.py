@@ -84,7 +84,7 @@ class CategoryGenreBase(models.Model):
 class Category(CategoryGenreBase):
     """Модель категории."""
 
-    class Meta:
+    class Meta(CategoryGenreBase.Meta):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
@@ -92,7 +92,7 @@ class Category(CategoryGenreBase):
 class Genre(CategoryGenreBase):
     """Модель жанра."""
 
-    class Meta:
+    class Meta(CategoryGenreBase.Meta):
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
