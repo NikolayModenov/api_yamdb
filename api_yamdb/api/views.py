@@ -3,7 +3,7 @@ from django.core.mail import send_mail
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, status, viewsets
+from rest_framework import filters, status, viewsets, mixins
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -12,7 +12,6 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.views import TokenViewBase
 
 from api.filters import TitleFilter
-from api.mixins import CreateListDestroyViewSet
 from api.permissions import AdminOrReadOnly, IsAdmin
 from api.serializers import (
     CategorySerializer, CommentSerializer, GenreSerializer, ReviewSerializer,
@@ -36,24 +35,30 @@ def send_confirmation_code(user, confirmation_code):
     )
 
 
-class CategoryViewSet(CreateListDestroyViewSet):
-    """Вьюсет для категорий."""
-    queryset = Category.objects.all().order_by('id')
-    serializer_class = CategorySerializer
+class CreateListDestroyViewSet(mixins.CreateModelMixin,
+                               mixins.ListModelMixin,
+                               mixins.DestroyModelMixin,
+                               viewsets.GenericViewSet):
+    """Вьюсет, позволяющий осуществлять GET, POST и DELETE запросы."""
+
     permission_classes = (AdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
+
+
+class CategoryViewSet(CreateListDestroyViewSet):
+    """Вьюсет для категорий."""
+
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
 
 
 class GenreViewSet(CreateListDestroyViewSet):
     """Вьюсет для жанров."""
-    queryset = Genre.objects.all().order_by('id')
+
+    queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (AdminOrReadOnly,)
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('name',)
-    lookup_field = 'slug'
 
 
 class TitleViewSet(ModelViewSet):

@@ -28,7 +28,7 @@ class YamdbUser(AbstractUser):
     )
     bio = models.TextField('Характеристика', blank=True, null=True)
     role = models.CharField(
-        default=USER, choices=ROLES,
+        'Должность', default=USER, choices=ROLES,
         max_length=max(map(len, dict(ROLES).values()))
     )
     confirmation_code = models.CharField(
@@ -60,34 +60,42 @@ class YamdbUser(AbstractUser):
         return self.role == ADMIN or self.is_superuser or self.is_staff
 
 
-class Category(models.Model):
-    """Модель категории."""
+class CategoryGenreBase(models.Model):
+    """Базовая модель для моделей категории и жанра"""
 
-    name = models.CharField(max_length=256)
-    slug = models.SlugField(unique=True, max_length=50)
+    name = models.CharField(
+        max_length=256,
+        verbose_name='Hазвание',
+        db_index=True,
+    )
+    slug = models.SlugField(
+        max_length=50,
+        verbose_name='Идентификатор',
+        unique=True,
+    )
+
+    class Meta:
+        abstract = True
+        ordering = ('name',)
+
+    def __str__(self):
+        return self.name[:30]
+
+
+class Category(CategoryGenreBase):
+    """Модель категории."""
 
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
-        ordering = ('name',)
-
-    def __str__(self):
-        return self.name[:30]
 
 
-class Genre(models.Model):
+class Genre(CategoryGenreBase):
     """Модель жанра."""
-
-    name = models.CharField(max_length=256, verbose_name='Hазвание жанра')
-    slug = models.SlugField(unique=True, max_length=50, verbose_name='slug')
 
     class Meta:
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
-        ordering = ('name',)
-
-    def __str__(self):
-        return self.name[:30]
 
 
 class Title(models.Model):
@@ -100,9 +108,10 @@ class Title(models.Model):
     description = models.TextField(
         verbose_name='Краткое описание', blank=True, null=True
     )
-    genre = models.ManyToManyField(Genre, through='GenreTitle')
-    raiting = models.DecimalField(
-        max_digits=4, decimal_places=2, default=0
+    genre = models.ManyToManyField(
+        Genre,
+        related_name='titles',
+        verbose_name='Жанр произведения',
     )
     category = models.ForeignKey(
         Category, on_delete=models.SET_NULL, null=True
@@ -112,7 +121,7 @@ class Title(models.Model):
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
         default_related_name = 'titles'
-        ordering = ('-year',)
+        ordering = ('-year', 'name')
 
     def __str__(self):
         return self.name[:30]
@@ -125,7 +134,7 @@ class GenreTitle(models.Model):
 
 class AbstractBaseReviewComment(models.Model):
     """Базовая абстрактная модель комментариев, отзыв."""
-    text = models.TextField('Описания')
+    text = models.TextField('Описание')
     author = models.ForeignKey(YamdbUser, on_delete=models.CASCADE,
                                verbose_name='Автор')
     pub_date = models.DateTimeField(auto_now_add=True,
