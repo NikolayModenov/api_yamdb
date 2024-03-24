@@ -48,14 +48,14 @@ class CategoryGenreBaseViewSet(mixins.CreateModelMixin,
 class CategoryViewSet(CategoryGenreBaseViewSet):
     """Вьюсет для категорий."""
 
-    queryset = Category.objects.all().order_by('pk')
+    queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
 class GenreViewSet(CategoryGenreBaseViewSet):
     """Вьюсет для жанров."""
 
-    queryset = Genre.objects.all().order_by('pk')
+    queryset = Genre.objects.all()
     serializer_class = GenreSerializer
 
 
@@ -63,10 +63,11 @@ class TitleViewSet(ModelViewSet):
     """Вьюсет для произведений."""
     queryset = Title.objects.annotate(
         rating=Avg('reviews__score')
-    ).order_by('pk')
+    )
     permission_classes = (AdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
+    ordering_fields = ('name',)
     http_method_names = ('get', 'post', 'patch', 'delete')
 
     def get_serializer_class(self):

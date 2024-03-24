@@ -1,4 +1,3 @@
-from django.db import IntegrityError
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.shortcuts import get_object_or_404
@@ -8,6 +7,16 @@ from reviews.models import (
     Category, Comment, Genre, Review, Title, YamdbUser, MAX_LENGTH
 )
 from reviews.validators import validate_username
+
+FIELDS_META = (
+    'id',
+    'name',
+    'year',
+    'rating',
+    'description',
+    'genre',
+    'category'
+)
 
 
 class AuthUserSerializer(serializers.ModelSerializer):
@@ -39,20 +48,29 @@ class UserRegistrationSerializer(serializers.Serializer):
         max_length=MAX_LENGTH, required=True,
         validators=[
             UnicodeUsernameValidator(), validate_username
+
         ]
     )
 
     def create(self, validated_data):
-        try:
-            user, status = YamdbUser.objects.get_or_create(**validated_data)
-            return user
-        except IntegrityError:
+        has_email = YamdbUser.objects.filter(
+            email=self.data.get('email')
+        ).exists()
+        has_username = YamdbUser.objects.filter(
+            username=self.data.get('username')
+        ).exists()
+        if (not has_email and has_username) or (
+            has_email and not has_username
+        ):
             raise serializers.ValidationError(
-                f'Ввдёные username - {validated_data.get("username")} '
-                f'или email - {validated_data.get("email")} '
-                'уже зарегистрированы. '
-                'Для регистрации нового пользователя необходимо '
-                'ввести уникальные username и email.'
+                "Неуникальный username или email."
+            )
+        try:
+            user = YamdbUser.objects.get_or_create(**validated_data)
+            return user
+        except ValueError:
+            raise serializers.ValidationError(
+                "Неуникальный username или email."
             )
 
 
@@ -88,24 +106,8 @@ class TitleViewingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        fields = (
-            'id',
-            'name',
-            'year',
-            'rating',
-            'description',
-            'genre',
-            'category'
-        )
-        read_only_fields = (
-            'id',
-            'name',
-            'year',
-            'rating',
-            'description',
-            'genre',
-            'category',
-        )
+        fields = FIELDS_META
+        read_only_fields = FIELDS_META
 
 
 class TitleEditingSerializer(serializers.ModelSerializer):
@@ -140,12 +142,12 @@ class ReviewSerializer(serializers.ModelSerializer):
         fields = ('id', 'text', 'score', 'author', 'pub_date')
 
     def validate(self, attrs):
+        title = get_object_or_404(
+            Title,
+            pk=self.context['view'].kwargs.get('title_id')
+        )
         request = self.context['request']
         if request.method == 'POST':
-            title = get_object_or_404(
-                Title,
-                pk=self.context['view'].kwargs.get('title_id')
-            )
             if Review.objects.filter(title=title,
                                      author=request.user).exists():
                 raise serializers.ValidationError("Вы уже оставляли отзыв.")
