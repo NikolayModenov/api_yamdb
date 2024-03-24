@@ -14,8 +14,9 @@ def validate_year(value):
     if value > timezone.now().year:
         raise ValidationError(
             f'Год произведения - {value}, '
-            f'должен быть меньше текущего года - {timezone.now().year}.'
+            f'не должен быть больше текущего года - {timezone.now().year}.'
         )
+    return value
 
 
 def validate_username(username):
