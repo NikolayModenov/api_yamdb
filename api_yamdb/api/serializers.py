@@ -1,6 +1,5 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.validators import UnicodeUsernameValidator
-from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
@@ -51,10 +50,8 @@ class UserRegistrationSerializer(serializers.Serializer):
         has_username = YamdbUser.objects.filter(
             username=self.data.get('username')
         ).exists()
-        if (
-            (not has_email and has_username)
-            or
-            (has_email and not has_username)
+        if (not has_email and has_username) or (
+            has_email and not has_username
         ):
             raise serializers.ValidationError(
                 "Неуникальный username или email."
