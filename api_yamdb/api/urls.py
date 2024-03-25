@@ -18,12 +18,12 @@ router_v1.register(
     CommentViewSet, basename='comment')
 router_v1.register('users', UserListViewSet, basename='users')
 
-registration_url = [
+registrations_url = [
     path('auth/signup/', SignUpView.as_view(), name='signup'),
     path('auth/token/', TokenView.as_view(), name='token_obtain_pair')
 ]
 
 urlpatterns = [
     path('v1/', include(router_v1.urls)),
-    path('v1/', include(registration_url)),
+    path('v1/', include(registrations_url)),
 ]
