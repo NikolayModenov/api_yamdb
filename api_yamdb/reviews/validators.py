@@ -23,11 +23,12 @@ def validate_username(username):
         raise ValidationError(
             f'Неверное имя пользователя: {username}.'
         )
-    if not re.fullmatch(r'^[\w.@+-]+\Z', username):
-        bad_symbols = set(re.findall(r'[^\w.@+-]', username))
+    check_symbols = re.sub(r'[\w.@+-]', '', username)
+    if check_symbols:
+        bad_symbols = "".join(set(check_symbols))
         raise ValidationError(
             'В Имени пользователя использованы запрещённые символы: '
-            f'{bad_symbols}. '
+            f'{bad_symbols} '
             'Введите корректное имя пользователя. '
             'username может содержать только латинские буквы, '
             'символы @/./+/-/_ и цифры.'
