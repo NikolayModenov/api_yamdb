@@ -126,7 +126,7 @@ class Title(models.Model):
         return self.name[:30]
 
 
-class AbstractBase(models.Model):
+class TextAuthorDateFieldsBase(models.Model):
     """Базовая абстрактная модель комментариев, отзыв."""
     text = models.TextField('Описание')
     author = models.ForeignKey(YamdbUser, on_delete=models.CASCADE,
@@ -142,7 +142,7 @@ class AbstractBase(models.Model):
         return self.text[:TEXT_SIZE]
 
 
-class Review(AbstractBase):
+class Review(TextAuthorDateFieldsBase):
     """Модель отзыва на произведение."""
     title = models.ForeignKey(Title, on_delete=models.CASCADE,
                               verbose_name='Произведение')
@@ -152,7 +152,7 @@ class Review(AbstractBase):
                     MaxValueValidator(MAX_SCORE_VALUE)]
     )
 
-    class Meta(AbstractBase.Meta):
+    class Meta(TextAuthorDateFieldsBase.Meta):
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
         default_related_name = 'reviews'
@@ -161,12 +161,12 @@ class Review(AbstractBase):
         )]
 
 
-class Comment(AbstractBase):
+class Comment(TextAuthorDateFieldsBase):
     """Модель комментарии на отзыва."""
     review = models.ForeignKey(Review, on_delete=models.CASCADE,
                                verbose_name='Отзыв')
 
-    class Meta(AbstractBase.Meta):
+    class Meta(TextAuthorDateFieldsBase.Meta):
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
         default_related_name = 'comments'
