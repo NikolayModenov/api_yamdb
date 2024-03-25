@@ -10,17 +10,6 @@ from reviews.models import (
 from reviews.validators import validate_username
 
 
-FIELDS_META = (
-    'id',
-    'name',
-    'year',
-    'rating',
-    'description',
-    'genre',
-    'category'
-)
-
-
 class AuthUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = YamdbUser
@@ -57,9 +46,16 @@ class UserRegistrationSerializer(serializers.Serializer):
         try:
             user, status = YamdbUser.objects.get_or_create(**validated_data)
             return user
-        except IntegrityError as error:
+        except IntegrityError:
+            duplicate_data = (
+                validated_data["email"]
+                if YamdbUser.objects.filter(
+                    email=validated_data["email"]
+                ).exists()
+                else validated_data["username"]
+            )
             raise serializers.ValidationError(
-                f'При регистрации возникла ошибка: {error}. '
+                f'Введённое значение не уникально: {duplicate_data}. '
                 'Для регистрации нового пользователя необходимо '
                 'ввести уникальные username и email.'
             )
@@ -97,8 +93,16 @@ class TitleViewingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        fields = FIELDS_META
-        read_only_fields = FIELDS_META
+        fields = (
+            'id',
+            'name',
+            'year',
+            'rating',
+            'description',
+            'genre',
+            'category'
+        )
+        read_only_fields = fields
 
 
 class TitleEditingSerializer(serializers.ModelSerializer):
