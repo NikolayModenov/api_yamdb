@@ -10,17 +10,6 @@ from reviews.models import (
 from reviews.validators import validate_username
 
 
-FIELDS_META = (
-    'id',
-    'name',
-    'year',
-    'rating',
-    'description',
-    'genre',
-    'category'
-)
-
-
 class AuthUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = YamdbUser
@@ -97,8 +86,16 @@ class TitleViewingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        fields = FIELDS_META
-        read_only_fields = FIELDS_META
+        fields = (
+            'id',
+            'name',
+            'year',
+            'rating',
+            'description',
+            'genre',
+            'category'
+        )
+        read_only_fields = fields
 
 
 class TitleEditingSerializer(serializers.ModelSerializer):
