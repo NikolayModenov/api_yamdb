@@ -2,9 +2,9 @@ import re
 
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-from rest_framework import serializers
+from rest_framework.serializers import ValidationError
 
-from api_yamdb.settings import URL_PATH_NAME
+from api_yamdb.settings import USER_URL_PATH_NAME
 
 
 def validate_year(value):
@@ -19,13 +19,20 @@ def validate_year(value):
 
 
 def validate_username(username):
-    if username == URL_PATH_NAME:
-        raise serializers.ValidationError(
+    if username == USER_URL_PATH_NAME:
+        raise ValidationError(
             f'Неверное имя пользователя: {username}.'
         )
-    if not re.fullmatch(r'^[\w.@+-]+\Z', username):
+    regexp = r'^[\w.@+-]+\Z'
+    if not re.fullmatch(regexp, username):
+        bad_symbols = list()
+        for symbol in username:
+            if not re.fullmatch(regexp, symbol):
+                bad_symbols.append(symbol)
         raise ValidationError(
-            'Введите действительное имя пользователя. '
+            'В Имени пользователя использованы запрещённые символы: '
+            f'{bad_symbols}. '
+            'Введите корректное имя пользователя. '
             'username может содержать только латинские буквы, '
             'символы @/./+/-/_ и цифры.'
         )

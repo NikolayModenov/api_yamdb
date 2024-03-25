@@ -20,7 +20,7 @@ from api.serializers import (
 )
 from api.viewsets import AbstractReviewCommentViewSet
 from reviews.models import Category, Genre, Review, Title, YamdbUser
-from api_yamdb.settings import URL_PATH_NAME, DEFAULT_FROM_EMAIL
+from api_yamdb.settings import USER_URL_PATH_NAME, DEFAULT_FROM_EMAIL
 
 
 def send_confirmation_code(user, confirmation_code):
@@ -48,14 +48,14 @@ class CategoryGenreBaseViewSet(mixins.CreateModelMixin,
 class CategoryViewSet(CategoryGenreBaseViewSet):
     """Вьюсет для категорий."""
 
-    queryset = Category.objects.all().order_by('pk')
+    queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
 class GenreViewSet(CategoryGenreBaseViewSet):
     """Вьюсет для жанров."""
 
-    queryset = Genre.objects.all().order_by('pk')
+    queryset = Genre.objects.all()
     serializer_class = GenreSerializer
 
 
@@ -63,7 +63,7 @@ class TitleViewSet(ModelViewSet):
     """Вьюсет для произведений."""
     queryset = Title.objects.annotate(
         rating=Avg('reviews__score')
-    ).order_by('pk')
+    ).order_by(Title._meta.ordering[0])
     permission_classes = (AdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
@@ -141,7 +141,7 @@ class UserListViewSet(viewsets.ModelViewSet):
         methods=['GET'],
         detail=False,
         permission_classes=[IsAuthenticated],
-        url_path=URL_PATH_NAME
+        url_path=USER_URL_PATH_NAME
     )
     def get_current_user_info(self, request):
         return Response(
