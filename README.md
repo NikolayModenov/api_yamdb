@@ -96,10 +96,13 @@ python manage.py csv_importer
 
 ## Спецификация API сервера 
 
-`http://127.0.0.1:8000/redoc/`
+
+[Ссылка на спецификацию](http://127.0.0.1:8000/redoc/)
+
 
 ## Список приложений используемых для разработки данного сервиса
 
+Python 3.9.13
 Django 3.2
 djangorestframework 3.12.4
 djangorestframework-simplejwt 4.7.2
